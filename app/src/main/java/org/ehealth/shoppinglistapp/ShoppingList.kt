@@ -66,7 +66,30 @@ fun ShoppingListApp() {
                 .padding(16.dp),
         ) {
             items(sItems) {
-                ShoppingListItem(item = it, onEditClick = { /*TODO*/ }) {}
+//                ShoppingListItem(item = it, onEditClick = { /*TODO*/ }) {}
+                    item ->
+                if (item.isEditing) {
+                    ShoppingItemEditor(item = item, onEditComplete = { editedName, editedQuantity ->
+                        sItems = sItems.map { it.copy(isEditing = false) };
+                        val editedItem = sItems.find { it.id == item.id };
+                        editedItem?.let {
+                            it.name = editedName;
+                            it.quantity = editedQuantity;
+                        }
+                    });
+                } else {
+                    ShoppingListItem(
+                        item = item,
+                        onEditClick = {
+                            // finding out which item we are editing and changing is "isEditing boolean"
+                            // to true.
+                            sItems = sItems.map { it.copy(isEditing = it.id == item.id) }
+                        },
+                        onDeleteClick = {
+                            sItems = sItems - item
+                        }
+                    )
+                }
             }
         }
     }
@@ -144,12 +167,16 @@ fun ShoppingListItem(
             ),
         horizontalArrangement = Arrangement.SpaceEvenly,
     ) {
-        Text(text = item.name, modifier = Modifier
-            .padding(8.dp)
-            .align(Alignment.CenterVertically));
-        Text(text = "Qty: ${item.quantity}", modifier = Modifier
-            .padding(8.dp)
-            .align(Alignment.CenterVertically));
+        Text(
+            text = item.name, modifier = Modifier
+                .padding(8.dp)
+                .align(Alignment.CenterVertically)
+        );
+        Text(
+            text = "Qty: ${item.quantity}", modifier = Modifier
+                .padding(8.dp)
+                .align(Alignment.CenterVertically)
+        );
 
         Row(modifier = Modifier.padding(8.dp)) {
             IconButton(onClick = onEditClick) {
@@ -182,7 +209,7 @@ fun ShoppingItemEditor(
         Column {
             BasicTextField(
                 value = editedName,
-                onValueChange = {editedName = it},
+                onValueChange = { editedName = it },
                 singleLine = true,
                 modifier = Modifier
                     .wrapContentSize()
@@ -190,18 +217,18 @@ fun ShoppingItemEditor(
             );
             BasicTextField(
                 value = editedQuality,
-                onValueChange = {editedQuality = it},
+                onValueChange = { editedQuality = it },
                 singleLine = true,
                 modifier = Modifier
                     .wrapContentSize()
                     .padding(8.dp),
             )
         }
-        
+
         Button(onClick = {
             isEditing = false;
             onEditComplete(editedName, editedQuality.toIntOrNull() ?: 1);
-        } ) {
+        }) {
             Text(text = "Save")
         }
     }
